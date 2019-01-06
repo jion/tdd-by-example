@@ -8,8 +8,7 @@ class TestCase:
     def tearDown(self):
         pass
 
-    def run(self):
-        result = TestResult()
+    def run(self, result):
         result.test_started()
 
         self.setUp()
@@ -38,6 +37,20 @@ class TestResult:
         return "{} run, {} failed".format(self.run_count, self.error_count)
 
 
+class TestSuite:
+    def __init__(self):
+        self.tests = []
+
+    def add(self, test):
+        self.tests.append(test)
+
+    def run(self, result):
+        for test in self.tests:
+            test.run(result)
+
+        return result
+
+
 class WasRun(TestCase):
     def __init__(self, name):
         TestCase.__init__(self, name)
@@ -58,19 +71,22 @@ class WasRun(TestCase):
 
 
 class TestCaseTest(TestCase):
+    def setUp(self):
+        self.result = TestResult()
+
     def testTemplateMethod(self):
         self.test = WasRun("testMethod")
-        self.test.run()
+        self.test.run(self.result)
         assert("setUp testMethod tearDown " == self.test.log)
 
     def testResult(self):
         self.test = WasRun("testMethod")
-        result = self.test.run()
+        result = self.test.run(self.result)
         assert("1 run, 0 failed" == result.summary())
 
     def testFailedResult(self):
         self.test = WasRun("testBrokenMethod")
-        result = self.test.run()
+        result = self.test.run(self.result)
         assert("1 run, 1 failed" == result.summary())
 
     def testFailedResultFormatting(self):
@@ -79,8 +95,20 @@ class TestCaseTest(TestCase):
         result.test_failed()
         assert("1 run, 1 failed" == result.summary())
 
+    def testSuite(self):
+        test_suite = TestSuite()
+        test_suite.add(WasRun("testMethod"))
+        test_suite.add(WasRun("testBrokenMethod"))
+        result = test_suite.run(self.result)
+        assert("2 run, 1 failed" == result.summary())
 
-TestCaseTest('testTemplateMethod').run()
-TestCaseTest('testResult').run()
-TestCaseTest('testFailedResult').run()
-TestCaseTest('testFailedResultFormatting').run()
+
+suite = TestSuite()
+suite.add(TestCaseTest('testTemplateMethod'))
+suite.add(TestCaseTest('testResult'))
+suite.add(TestCaseTest('testFailedResult'))
+suite.add(TestCaseTest('testFailedResultFormatting'))
+suite.add(TestCaseTest('testSuite'))
+result = TestResult()
+suite.run(result)
+print result.summary()
