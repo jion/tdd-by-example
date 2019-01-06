@@ -7,4 +7,5 @@
 * Run multiple tests
 * ~~Report collected results~~
 * ~~Log string in WasRun~~
-* Report failed tests
+* ~~Report failed tests~~
+* Catch and report setUp errors
