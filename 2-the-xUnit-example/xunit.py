@@ -79,6 +79,12 @@ class TestCaseTest(TestCase):
         self.test.run(self.result)
         assert("setUp testMethod tearDown " == self.test.log)
 
+    def testInvokingTearDownEvenWhenFailure(self):
+        test = WasRun("testBrokenMethod")
+        test.run(self.result)
+        log = test.log
+        assert(log.endswith("tearDown "))
+
     def testResult(self):
         self.test = WasRun("testMethod")
         result = self.test.run(self.result)
@@ -109,6 +115,7 @@ suite.add(TestCaseTest('testResult'))
 suite.add(TestCaseTest('testFailedResult'))
 suite.add(TestCaseTest('testFailedResultFormatting'))
 suite.add(TestCaseTest('testSuite'))
+suite.add(TestCaseTest('testInvokingTearDownWhenFailure'))
 result = TestResult()
 suite.run(result)
 print result.summary()
